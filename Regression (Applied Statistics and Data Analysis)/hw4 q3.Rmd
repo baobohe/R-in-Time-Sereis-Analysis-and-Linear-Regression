@@ -1,0 +1,92 @@
+---
+title: "hw4 Q3"
+author: "Lisong he"
+date: "2024-03-27"
+output: pdf_document
+---
+
+a)
+```{r}
+grocery_data <- read.csv("/Users/lisonghe/Library/CloudStorage/OneDrive-JohnsHopkins/Semester 2/613 Applied Statistics and Data Analysis l/Homework/hw4/grocery-retailer.csv")
+pairs(grocery_data, main = "Scatter Plot Matrix for grocery Dataset")
+correlation_matrix <- cor(grocery_data)
+print(correlation_matrix)
+```
+Based on the scatter plot matrix, there seems to be a weakly positive linear relationship between Y and X1 and a even weaker positive linear relationship between Y and X2. The plot of Y and X3 indicates that X3 is a categorical variable. Also, X1 and X2 and X3 are weakly linearly related as all proved in the correlation matrix. 
+
+b)
+```{r}
+model <- lm(Y ~ X1 + X2 + X3, data = grocery_data)
+summary(model)
+```
+Based on the regression model, the estimated regression function is 
+Y = 0.0007871 * X1 -13.17e * X2 + 623.6 * X3 + 4150
+Here, b1 and b3 are statistically significant whereas b2 is not.
+
+c)
+```{r}
+# Residuals vs Fitted
+plot(model$fitted.values, resid(model), xlab="Fitted values", ylab="Residuals", main="Residuals vs Fitted")
+abline(h=0, col="red")
+```
+This effectively checks homoscedasticity. Here, there is no pattern detected which proves constant variance.
+```{r}
+# Residuals vs X1
+plot(grocery_data$X1, resid(model), xlab="X1", ylab="Residuals", main="Residuals vs X1")
+abline(h=0, col="red")
+```
+
+```{r}
+# Residuals vs X2
+plot(grocery_data$X2, resid(model), xlab="X2", ylab="Residuals", main="Residuals vs X2")
+abline(h=0, col="red")
+```
+
+```{r}
+# Residuals vs X3
+plot(grocery_data$X3, resid(model), xlab="X3", ylab="Residuals", main="Residuals vs X3")
+abline(h=0, col="red")
+```
+Here, the three plots of residuals against X1, X2, and X3 check the necessity of transformation of predictors. Here, all three plots show no patterns which means no transformation is needed.
+```{r}
+grocery_data$X1X2 <- grocery_data$X1 * grocery_data$X2
+residuals <- resid(model)
+if(length(residuals) == nrow(grocery_data)) {
+  plot(grocery_data$X1X2, residuals, 
+       xlab = "X1*X2 (Interaction Term)", 
+       ylab = "Residuals", 
+       main = "Plot of Residuals against X1*X2")
+  abline(h = 0, col = "red")
+} else {
+  stop("The lengths of 'residuals' and 'grocery_data$X1X2' do not match.")
+}
+```
+Plotting residuals against interaction terms checks the presence of the interaction term
+```{r}
+# Normal Q-Q plot
+qqnorm(resid(model), main="Normal Q-Q Plot")
+qqline(resid(model), col="red")
+```
+This testifies the normality of residuals. At two ends of the distribution, the dots deviate from the normal line which stands for longer tails than a normal curve. The residual is roughly normal.
+
+d)
+```{r}
+model_2 <- lm(Y ~ X1 + X2, data=grocery_data)
+summary(model_2)
+```
+
+e)
+```{r}
+library(car)
+avPlots(model_2)
+```
+Added-Variable plots plot residuals of Y after regressing on all predictors except Xi against that of Xi. It is essentially the plot of part of Y unexplained by other predictors against part of Xi unexplained by other predictors. Both plots show non-zero slopes, indicating that X1 explains Y.
+
+f)
+```{r}
+model_Y_on_X1 <- lm(Y ~ X1, data=grocery_data)
+model_X2_on_X1 <- lm(X2 ~ X1, data=grocery_data)
+model_resids <- lm(resid(model_Y_on_X1) ~ resid(model_X2_on_X1))
+summary(model_resids)
+```
+

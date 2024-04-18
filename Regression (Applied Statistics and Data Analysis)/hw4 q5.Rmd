@@ -1,0 +1,50 @@
+---
+title: "hw4 Q5"
+author: "Lisong he"
+date: "2024-03-27"
+output: pdf_document
+---
+
+a)
+```{r}
+data(stackloss, package = 'datasets')
+full_model <- lm(stack.loss ~ Air.Flow + Water.Temp + Acid.Conc., data=stackloss)
+summary(full_model)
+```
+The estimated function is Li = -39.9197 + 0.7156*Ai + 1.2953*Wi - 0.1521Ci. From the regression model, the predictor Acid.Conc has t*statistic above 0.05, which proves to be insignificant. So air flow and water tempreature are important.
+
+b)
+```{r}
+reduced_model <- lm(stack.loss ~ Air.Flow, data=stackloss)
+summary(reduced_model)
+```
+The reduced model has the following estimated fit function:
+Li = -44.13202 + 1.02031*Ai
+
+c)
+```{r}
+SSEf <- sum(residuals(full_model)^2) 
+SSEr <- sum(residuals(reduced_model)^2)
+print(SSEf)
+print(SSEr)
+```
+DF of SSE(f) is n - p which is 21 - 4 = 17.
+DF of SSE(r) is n - p which is 21 - 2 = 19.
+The full model has smaller SSE, indicating a better fit. The degrees of freedom reflect the number of independent predictors used to estimate variance, with the full model having fewer degrees of freedom due to more parameters being estimated.
+
+d)
+```{r}
+MSEf <- SSEf / 17
+MSEr <- SSEr / 19
+F <- ((SSEr - SSEf) / (19 - 17)) / MSEf
+print(F)
+print(pf(F, 2, 17, lower.tail = FALSE) < 0.05)
+```
+The p-value of the F statistic is way less than 0.05, hence rejecting the null hypothesis in favor of the alternative hypothesis. 
+
+e)
+```{r}
+pvalue <- pf(F, 2, 17, lower.tail = FALSE)
+print(pvalue)
+```
+

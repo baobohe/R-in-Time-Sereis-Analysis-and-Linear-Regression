@@ -1,0 +1,102 @@
+---
+title: "q3"
+author: "Lisong He"
+date: "2024-04-10"
+output: pdf_document
+---
+a)
+```{r}
+data <- read.csv('grocery-retailer.csv')
+model <- lm(Y ~ X1 + X2 + X3, data=data)
+hat_values <- hatvalues(model)
+print(hat_values)
+```
+```{r}
+outlying_X <- which(hat_values > 2*4/52)
+outlying_X
+```
+b)
+```{r}
+plot(data$X1, data$X2, main="Scatter plot of X2 against X1")
+X_new <- cbind(1, 300, 7.2, 0) # Assuming your model has an intercept
+predict(model, newdata=data.frame(X1=300, X2=7.2, X3=0))
+
+```
+Visually at X1 = 300000 and x2 = 7.2, the point is in the center of the data so no extrapolation.
+```{r}
+X <- model.matrix(model, data)
+XTX <- t(X) %*% X
+XTX_inv <- solve(XTX)
+X_new <- matrix(c(1, 300, 7.2, 0), nrow = 1)
+lev <- X_new %*% XTX_inv %*% t(X_new)
+print(paste('Hnew,new is ',lev, 'for this measurement.'))
+print(paste('Range of hat values is [', min(hat_values), ',', max(hat_values), ']'))
+```
+Apparently, Hnew,new exceeds the bounds so it is a hidden extrapolation, which contradicts my previous observation.
+
+c)
+Looking at DFFITS:
+```{r}
+cases <- c(16, 22, 43, 48, 10, 32, 38, 40)
+for (case in cases) {
+  cat("Case", case, "has DFFITS of ", dffits(model)[case], "\n")
+  if (abs(dffits(model)[case]) > 2 * sqrt(4/52)) {
+    cat("Case", case, "is an influential observation on Y in terms of DFFITS", "\n")
+  } else {
+    cat("Case", case, "is not a influential observatio on Y in terms of DFFITS", "\n")
+  }
+  cat("\n")
+}
+```
+Looking at cook's distance:
+```{r}
+cases <- c(16, 22, 43, 48, 10, 32, 38, 40)
+for (case in cases) {
+  cook <- cooks.distance(model)[case]
+  cat("Case", case, "has Cook's distance of", cook, "\n")
+  if (cook <= 0.2) {
+    cat("Case", case, "has no influence in terms of Cook's distance\n")
+  } else if (cook > 0.2 && cook <= 0.5) {
+    cat("Case", case, "has moderate influence in terms of Cook's distance\n")
+  } else if (cook > 0.5) {
+    cat("Case", case, "has major influence in terms of Cook's distance\n")
+  }
+  cat("\n")
+}
+```
+Looking at DFBETAS:
+```{r}
+cases <- c(16, 22, 43, 48, 10, 32, 38, 40)
+for (case in cases) {
+  cat("Case", case, "has DFBETAS of ", dfbetas(model)[case], "\n")
+  if (abs(dfbetas(model)[case]) > 2/sqrt(52)) {
+    cat("Case", case, "is an influential observation on Y in terms of DFBETAS", "\n")
+  } else {
+    cat("Case", case, "is not a influential observatio on Y in terms of DFBETAS", "\n")
+  }
+  cat("\n")
+}
+```
+d)
+```{r}
+plot(cooks.distance(model), type="h", main="Index plot of Cook's distance")
+```
+According to the plot, none of the cases has cook's distance larger than 0.1 so they are all considered non-influential.
+
+e)
+```{r}
+# Scatter plot matrix
+pairs(data[, c("X1", "X2", "X3")])
+```
+```{r}
+# Correlation matrix
+cor(data[, c("X1", "X2", "X3")])
+```
+The scatter plots and correlation coefficients indicate that there are weak linear relationships between the variables. The binary nature of X3 results in distinct groupings rather than a traditional scatter pattern, which could influence the low correlation coefficients with X1 and X2.
+
+f)
+```{r}
+library(car)
+vif(model)
+```
+

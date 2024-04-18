@@ -1,0 +1,37 @@
+---
+title: "hw4 Q6"
+author: "Lisong he"
+date: "2024-03-28"
+output: pdf_document
+---
+
+a)
+```{r}
+library(faraway)
+data(sat, package = 'faraway')
+
+sat_model <- lm(total ~ expend + salary + ratio, data=sat)
+summary(sat_model)
+```
+b)
+The intercept is estimated to be 1069.234. The coefficient of expend is 16.649, -8.823 for salary, and 6.33 for ratio. But t* for all three predictors are larger than 0.05, which are statistically insignificant. There is a suggestive negative association with teacher salary if alpha is 0.1, meaning that higher teacher salaries could potentially correspond to lower average total SAT scores.
+
+c)
+```{r}
+sat_model_takers <- lm(total ~ expend + salary + ratio + takers, data=sat)
+summary(sat_model_takers)
+```
+In this new model, the old three predictors still failed to be statistically significant, whereas the new predictor 'takers' shows a highly significant (p < 0.001) negative association with average total SAT scores.
+
+d)
+```{r}
+ESR <- rstudent(sat_model_takers)
+plot(ESR)
+```
+From the plot, observation number 44 and 48 are likely to be outliers given their large distance from y = 0.
+```{r}
+t <- qt(1 - 0.1 / (2*50), 50 - 5 - 1, lower.tail = TRUE)
+outliers <- which(abs(ESR) > t)
+print(outliers)
+```
+In fact, no outliers are detected under the significance level 0.1. 

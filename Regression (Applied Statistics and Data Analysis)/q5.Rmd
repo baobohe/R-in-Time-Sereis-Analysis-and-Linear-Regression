@@ -1,0 +1,73 @@
+---
+title: "q5"
+author: "Lisong He"
+date: "2024-04-10"
+output: pdf_document
+---
+
+a)
+```{r}
+data <- read.csv('employee-salaries.csv')
+model <- lm(Y ~ factor(data$Degree) + X3 + X4, data=data)
+residuals <- resid(model)
+plot(fitted(model), residuals, main="Residuals vs Fitted Values")
+abline(h = 0, col = "red")
+```
+The plot shows unconstant variance in the models residuals increase as Y_hat increases.
+b)
+```{r}
+ordered_data <- data[order(fitted(model)), ]
+library(ALSM)
+threshold <- data[order(fitted(model)), ][33,1]
+group <- rep(1, length(data$Y))
+group[fitted(model) <= threshold] <- 0
+bftest(model, group, alpha=0.01)
+```
+The p-value is way smaller than the significance interval alpha so we reject the null hypothesis of constant variances in favor of the alternative hypothesis of hetereoscedascitity.
+
+c)
+```{r}
+plot(data$X3, abs(residuals), main="Absolute Residuals vs X3")
+abline(h = mean(abs(residuals)), col = "red")
+plot(data$X4, abs(residuals), main="Absolute Residuals vs X4")
+abline(h = mean(abs(residuals)), col = "red")
+```
+Both plots show increasing variance, ie standard deviation of error terms, as predictors increase since dots deviates from the mean of absolute residuals.
+
+d)
+```{r}
+
+sd_model <- lm(abs(residuals) ~ data$X3 + data$X4)
+estimated_std <- sd_model$fitted.values
+weight <- 1 / (estimated_std)^2
+plot(estimated_std, main = 'Estimated standard deviation')
+plot(weight, main = 'Weight for all observations')
+```
+
+e)
+```{r}
+wls_model <- lm(Y ~ factor(data$Degree) + X3 + X4, data=data, weights=weight)
+wls_model$coefficients
+```
+```{r}
+model$coefficients
+```
+All coefficients are discrepant from the ols model except that X1 and intercept don't have a big difference.
+
+f)
+```{r}
+standard_error_ols <- summary(model)$coefficients[, "Std. Error"]
+standard_error_wls <- summary(wls_model)$coefficients[, "Std. Error"]
+data.frame(standard_error_ols, standard_error_wls)
+```
+Standard errors of ols is larger than that of wls except in X4, indicating that wls has more accruate models than ols.
+
+g)
+```{r}
+sd_model_re <- lm(abs(residuals(wls_model)) ~ data$X3 + data$X4)
+estimated_std_re <- sd_model_re$fitted.values
+weight_re <- 1 / (estimated_std_re)^2
+wls_model_re <- lm(Y ~ factor(data$Degree) + X3 + X4, data=data, weights=weight_re)
+wls_model_re$coefficients
+```
+In this iterated process, intercept and X2 show relatively large changes; all the rest are roughly the same, indicating that the coefficients are on the way to convergence. In this case, we should perform another iteration to converge even closer to the finest result.

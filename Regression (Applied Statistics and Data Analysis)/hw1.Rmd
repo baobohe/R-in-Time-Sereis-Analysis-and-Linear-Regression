@@ -1,0 +1,53 @@
+---
+title: "hw1 question 6"
+author: "Lisong He"
+date: "2024-02-01"
+output:
+  pdf_document:
+    latex_engine: xelatex
+
+---
+
+Question (a)
+
+```{r}
+data <- read.csv("plastic-hardness.csv", header = TRUE)
+model <- lm(Y ~ X,data = data)
+plot(data$X, data$Y, main = "Regression Line", 
+     xlab = "Elapsed Time in hours", ylab = "Hardness in Brinell units")
+abline(model, col = "blue")
+```
+
+Yes, it is a good fit.
+
+Question (b)
+
+```{r}
+predict(model, newdata = data.frame(X = 40))
+```
+
+Question (c)
+
+```{r}
+coef(model)[["X"]]
+```
+
+Question (d)
+
+```{r}
+residuals <- resid(model)
+sum(residuals)
+```
+
+No, they don't sum to zero but the sum is very close to zero.
+
+Question (e)
+
+```{r}
+sigma_squared <- sum(residuals^2) / (model$df.residual)
+sigma <- sqrt(sigma_squared)
+sigma_squared
+sigma
+```
+
+$\limits$ is the standard deviation of the error terms. It should be the same unit as Y. So it is in Brinell units.
