@@ -1,0 +1,69 @@
+---
+title: "hw5 q1"
+author: "Lisong he"
+date: "2024-04-04"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+1.
+a)
+```{r}
+library('TSA')
+series = arima.sim(n=48,list(ar=0.7))
+theoretical_acf_lag1 <- 0.7
+theoretical_acf_lag5 <- 0.7^5
+print(paste('Theoretical autocorrelation at lag 1 is', theoretical_acf_lag1))
+print(paste('Theoretical autocorrelation at lag 5 is', theoretical_acf_lag5))
+```
+b)
+```{r}
+sample_acf_lag1 <- acf(series, plot = FALSE)$acf[1]
+sample_acf_lag5 <- acf(series, plot = FALSE)$acf[5]
+var_lag1 <- (1-0.7^2)/48
+var_lag5 <- (1+0.7^2)/(48*(1-0.7^2))
+z_score_lag1 <- (sample_acf_lag1 - theoretical_acf_lag1) / sqrt(var_lag1)
+z_score_lag5 <- (sample_acf_lag5 - theoretical_acf_lag5) / sqrt(var_lag5)
+print(paste('Z-score of sample autocorrelation at lag 1 is', z_score_lag1))
+print(paste('Z-score of sample autocorrelation at lag 5 is', z_score_lag5))
+```
+Here, both sample acfs have z-scores below the absolute value of 1.96, suggesting that they are not significantly different from the theoretical acfs.
+
+c)
+```{r}
+series1 <- arima.sim(n=48,list(ar=0.7))
+sample1_acf_lag1 <- acf(series1, plot = FALSE)$acf[1]
+sample1_acf_lag5 <- acf(series1, plot = FALSE)$acf[5]
+z_score1_lag1 <- (sample1_acf_lag1 - theoretical_acf_lag1) / sqrt(var_lag1)
+z_score1_lag5 <- (sample1_acf_lag5 - theoretical_acf_lag5) / sqrt(var_lag5)
+print(paste('Z-score of sample autocorrelation at lag 1 is', z_score1_lag1))
+print(paste('Z-score of sample autocorrelation at lag 5 is', z_score1_lag5))
+```
+In this new simulation, the z-scores are larger in scale than the previous one, but they still lie within the 95% confidence interval, suggesting that sample acfs are not significantly different from theoretical values.
+
+d)
+```{r}
+r1_samples <- numeric(10000)
+r5_samples <- numeric(10000)
+for(i in 1:10000) {
+  sim_data <- arima.sim(n = 48, list(ar = 0.7))
+  acfs <- acf(sim_data, lag.max = 5, plot = FALSE)$acf
+  r1_samples[i] <- acfs[1]
+  r5_samples[i] <- acfs[5]
+}
+hist(r1_samples, main="Histogram of r1", xlab="Autocorrelation at lag 1")
+hist(r5_samples, main="Histogram of r5", xlab="Autocorrelation at lag 5")
+sample_var_r1 <- var(r1_samples)
+sample_var_r5 <- var(r5_samples)
+large_sample_var_r1 <- var_lag1
+large_sample_var_r5 <- var_lag5
+
+print(paste('Sample variance of r1 is', sample_var_r1))
+print(paste('Large sample variance of r1 is', large_sample_var_r1))
+print(paste('Sample variance of r5 is', sample_var_r5))
+print(paste('Large sample variance of r5 is', large_sample_var_r5))
+```
+Here, the sample and theoretical variances are very close to each other for lag1 and relatively close at lag 5.

@@ -1,0 +1,71 @@
+---
+title: "hw5 q2"
+author: "Lisong he"
+date: "2024-04-04"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+2
+a)
+```{r}
+n <- 60
+theta <- 0.5
+series=arima.sim(n=n,list(ma=-theta))
+theoretical_acf_lag1 <- -theta / (1+theta^2)
+theoretical_acf_lag5 <- 0
+print(paste('Theoretical autocorrelation at lag 1 is', theoretical_acf_lag1))
+print(paste('Theoretical autocorrelation at lag 5 is', theoretical_acf_lag5))
+```
+
+b)
+```{r}
+sample_acf_lag1 <- acf(series, plot = FALSE)$acf[1]
+sample_acf_lag5 <- acf(series, plot = FALSE)$acf[5]
+std_lag1 <- 0.79/sqrt(n)
+std_lag5 <- 1.15/sqrt(n)
+z_score_lag1 <- (sample_acf_lag1 - theoretical_acf_lag1) / std_lag1
+z_score_lag5 <- (sample_acf_lag5 - theoretical_acf_lag5) / std_lag5
+print(paste('Z-score of sample autocorrelation at lag 1 is', z_score_lag1))
+print(paste('Z-score of sample autocorrelation at lag 5 is', z_score_lag5))
+```
+Here both abs(z-scores) are within 1.96, suggesting that the sample estimation is not significantly different from theoretical values.
+
+c)
+```{r}
+series=arima.sim(n=n,list(ma=-theta))
+sample1_acf_lag1 <- acf(series, plot = FALSE)$acf[1]
+sample1_acf_lag5 <- acf(series, plot = FALSE)$acf[5]
+z_score1_lag1 <- (sample1_acf_lag1 - theoretical_acf_lag1) / std_lag1
+z_score1_lag5 <- (sample1_acf_lag5 - theoretical_acf_lag5) / std_lag5
+print(paste('Z-score of sample autocorrelation at lag 1 is', z_score1_lag1))
+print(paste('Z-score of sample autocorrelation at lag 5 is', z_score1_lag5))
+```
+Similar to the previous simulation, both z-scores are statistically insignificantly different from theoretical values. 
+
+d)
+```{r}
+r1_samples <- numeric(10000)
+r5_samples <- numeric(10000)
+for(i in 1:10000) {
+  sim_data <- arima.sim(n=n,list(ma=-theta))
+  acfs <- acf(sim_data, lag.max = 5, plot = FALSE)$acf
+  r1_samples[i] <- acfs[1]
+  r5_samples[i] <- acfs[5]
+}
+hist(r1_samples, main="Histogram of r1", xlab="Autocorrelation at lag 1")
+sample_var_r1 <- var(r1_samples)
+sample_var_r5 <- var(r5_samples)
+large_sample_var_r1 <- std_lag1^2
+large_sample_var_r5 <- std_lag5^2
+
+print(paste('Sample variance of r1 is', sample_var_r1))
+print(paste('Large sample variance of r1 is', large_sample_var_r1))
+print(paste('Sample variance of r5 is', sample_var_r5))
+print(paste('Large sample variance of r5 is', large_sample_var_r5))
+```
+For both lag and 1 and 5, the sample variances are very close to theoretical large sample variances.
+
